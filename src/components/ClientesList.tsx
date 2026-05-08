@@ -16,16 +16,16 @@ export function ClientesList({ clientes, onEdit, onDelete }: ClientesListProps) 
   }
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-3">
       {clientes.map(cliente => (
         <div
           key={cliente.id}
-          className="bg-[#162316] border border-green-500/20 rounded-lg p-4 md:p-5 hover:border-green-500/40 transition-colors"
+          className="bg-[#162316] border border-green-500/20 rounded-lg p-5 hover:border-green-500/40 transition-colors"
         >
-          <div className="flex justify-between items-start mb-3 flex-col md:flex-row gap-2">
-            <div className="flex-1">
-              <h3 className="text-base md:text-lg font-semibold text-green-400">{cliente.nome_empresa}</h3>
-              <p className="text-white/70 text-xs md:text-sm">Responsável: {cliente.nome_responsavel}</p>
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h3 className="text-lg font-semibold text-green-400">{cliente.nome_empresa}</h3>
+              <p className="text-white/70 text-sm">Responsável: {cliente.nome_responsavel}</p>
             </div>
             <div className="flex gap-2">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -38,7 +38,7 @@ export function ClientesList({ clientes, onEdit, onDelete }: ClientesListProps) 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-xs md:text-sm mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
             <div>
               <p className="text-white/50">Telefone</p>
               <p className="text-white">{cliente.telefone || '-'}</p>
@@ -66,13 +66,13 @@ export function ClientesList({ clientes, onEdit, onDelete }: ClientesListProps) 
           <div className="flex gap-2">
             <button
               onClick={() => onEdit(cliente)}
-              className="flex-1 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 rounded px-3 py-2 text-blue-300 text-xs md:text-sm font-medium transition-colors"
+              className="flex-1 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 rounded px-3 py-2 text-blue-300 font-medium transition-colors"
             >
               Editar
             </button>
             <button
               onClick={() => cliente.id && onDelete(cliente.id)}
-              className="flex-1 bg-red-500/20 hover:bg-red-500/40 border border-red-500/30 rounded px-3 py-2 text-red-300 text-xs md:text-sm font-medium transition-colors"
+              className="flex-1 bg-red-500/20 hover:bg-red-500/40 border border-red-500/30 rounded px-3 py-2 text-red-300 font-medium transition-colors"
             >
               Deletar
             </button>

@@ -72,22 +72,22 @@ export function VendaModal({ isOpen, onClose, onSave, clientes, vendaEditando }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-3 md:p-4">
-      <div className="bg-[#1a2e1a] rounded-3xl p-5 md:p-8 max-w-md w-full border border-green-500/20 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#1a2e1a] rounded-3xl p-8 max-w-md w-full border border-green-500/20">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-white">
             {vendaEditando ? 'Editar Venda' : 'Nova Venda'}
           </h2>
           <button onClick={onClose} className="text-white/50 hover:text-white text-2xl">✕</button>
         </div>
 
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-4">
           <div>
-            <label className="text-white/70 text-xs md:text-sm">Cliente *</label>
+            <label className="text-white/70 text-sm">Cliente *</label>
             <select
               value={formData.cliente_id}
               onChange={(e) => setFormData({ ...formData, cliente_id: e.target.value })}
-              className="w-full bg-white text-black border border-green-500/30 rounded-lg px-3 md:px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+              className="w-full bg-white text-black border border-green-500/30 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500"
             >
               <option value="">Selecione um cliente...</option>
               {clientes.map(cli => (
@@ -143,21 +143,24 @@ export function VendaModal({ isOpen, onClose, onSave, clientes, vendaEditando }:
               placeholder="0"
               value={formData.quantidade}
               onChange={(e) => setFormData({ ...formData, quantidade: parseFloat(e.target.value) })}
-              className="w-full bg-white text-black border border-green-500/30 rounded-lg px-3 md:px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+              className="w-full bg-white text-black border border-green-500/30 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500"
             />
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Data para conferência *</label>
+            <label className="text-white/70 text-sm">Dia do mês para conferência *</label>
             <input
-              type="date"
+              type="number"
+              min="1"
+              max="31"
+              placeholder="15"
               value={formData.dia_conferencia}
               onChange={(e) => setFormData({ ...formData, dia_conferencia: e.target.value })}
-              className="w-full bg-white text-black border border-green-500/30 rounded-lg px-3 md:px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+              className="w-full bg-white text-black border border-green-500/30 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500"
             />
             {formData.dia_conferencia && (
               <p className="text-white/60 text-xs mt-1">
-                Próxima conferência: {new Date(formData.dia_conferencia).toLocaleDateString('pt-BR')}
+                Próxima conferência: {new Date(new Date().getFullYear(), new Date().getMonth(), parseInt(formData.dia_conferencia)).toLocaleDateString()}
               </p>
             )}
           </div>

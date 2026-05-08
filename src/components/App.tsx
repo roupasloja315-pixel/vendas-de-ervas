@@ -6,9 +6,8 @@ import { VendaModal } from './VendaModal';
 import { ClientesList } from './ClientesList';
 import { VendasList } from './VendasList';
 import { SyncManager } from './SyncManager';
-import { RelatorioModal } from './RelatorioModal';
 
-type Tab = 'clientes' | 'vendas' | 'relatorio';
+type Tab = 'clientes' | 'vendas';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<Tab>('clientes');
@@ -92,12 +91,12 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f1a0f] via-[#162316] to-[#1a2e1a] text-white">
-      <div className="w-full">
+      <div className="max-w-6xl mx-auto">
         <header className="bg-[#162316] border-b border-green-500/20 sticky top-0 z-40">
-          <div className="px-4 md:px-6 py-4 flex justify-between items-center gap-2">
+          <div className="px-6 py-4 flex justify-between items-center">
             <div>
-              <h1 className="text-xl md:text-3xl font-bold text-green-400">Tereré CRM</h1>
-              <p className="text-white/60 text-xs md:text-sm">Sistema de Vendas e Clientes</p>
+              <h1 className="text-3xl font-bold text-green-400">Tereré CRM</h1>
+              <p className="text-white/60 text-sm">Sistema de Vendas e Clientes</p>
             </div>
             <SyncManager isOnline={isOnline} onSync={async () => {
               carregarClientes();
@@ -105,10 +104,10 @@ export function App() {
             }} />
           </div>
 
-          <nav className="flex border-t border-green-500/20 overflow-x-auto">
+          <nav className="flex border-t border-green-500/20">
             <button
               onClick={() => setActiveTab('clientes')}
-              className={`flex-1 py-3 px-3 md:px-4 text-center font-semibold text-xs md:text-base transition-colors whitespace-nowrap ${
+              className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
                 activeTab === 'clientes'
                   ? 'border-b-2 border-green-400 text-green-400'
                   : 'text-white/60 hover:text-white/80'
@@ -118,28 +117,18 @@ export function App() {
             </button>
             <button
               onClick={() => setActiveTab('vendas')}
-              className={`flex-1 py-3 px-3 md:px-4 text-center font-semibold text-xs md:text-base transition-colors whitespace-nowrap ${
+              className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
                 activeTab === 'vendas'
                   ? 'border-b-2 border-green-400 text-green-400'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Vendas
-            </button>
-            <button
-              onClick={() => setActiveTab('relatorio')}
-              className={`flex-1 py-3 px-3 md:px-4 text-center font-semibold text-xs md:text-base transition-colors whitespace-nowrap ${
-                activeTab === 'relatorio'
-                  ? 'border-b-2 border-green-400 text-green-400'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-            >
-              Relatórios
+              Vendas Realizadas
             </button>
           </nav>
         </header>
 
-        <main className="p-4 md:p-6 max-w-7xl mx-auto w-full">
+        <main className="p-6">
           {activeTab === 'clientes' && (
             <div>
               <button
@@ -147,7 +136,7 @@ export function App() {
                   setClienteEditando(undefined);
                   setShowNovoClienteModal(true);
                 }}
-                className="mb-6 bg-green-500/40 hover:bg-green-500/60 rounded-lg px-4 md:px-6 py-2 text-sm md:text-base text-white font-semibold w-full md:w-auto"
+                className="mb-6 bg-green-500/40 hover:bg-green-500/60 rounded-lg px-6 py-2 text-white font-semibold"
               >
                 + Novo Cliente
               </button>
@@ -166,7 +155,7 @@ export function App() {
                   setVendaEditando(undefined);
                   setShowNovaVendaModal(true);
                 }}
-                className="mb-6 bg-green-500/40 hover:bg-green-500/60 rounded-lg px-4 md:px-6 py-2 text-sm md:text-base text-white font-semibold w-full md:w-auto"
+                className="mb-6 bg-green-500/40 hover:bg-green-500/60 rounded-lg px-6 py-2 text-white font-semibold"
               >
                 + Nova Venda
               </button>
@@ -177,13 +166,6 @@ export function App() {
                 onDelete={handleDeletarVenda}
               />
             </div>
-          )}
-
-          {activeTab === 'relatorio' && (
-            <RelatorioModal
-              clientes={clientes}
-              vendas={vendas}
-            />
           )}
         </main>
       </div>
