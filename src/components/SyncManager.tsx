@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { idbService } from '../services/indexedDB';
-import { supabaseService } from '../services/supabase';
+import { supabase } from '../services/supabase';
 
 interface SyncManagerProps {
   isOnline: boolean;
@@ -15,21 +14,13 @@ export function SyncManager({ isOnline, onSync }: SyncManagerProps) {
 
     setIsSyncing(true);
     try {
-      const clientes = await idbService.getClientes();
-      const vendas = await idbService.getVendas();
-      const categorias = await idbService.getCategorias();
-      const nichos = await idbService.getNichos();
-      const sabores = await idbService.getSabores();
-
-      await supabaseService.syncClientes(clientes);
-      await supabaseService.syncVendas(vendas);
-      await supabaseService.syncCategorias(categorias);
-      await supabaseService.syncNichos(nichos);
-      await supabaseService.syncSabores(sabores);
+      await supabase.from('clientes').select('*');
+      await supabase.from('vendas').select('*');
 
       onSync();
     } catch (error) {
       console.error('Erro ao sincronizar:', error);
+      alert('Erro ao sincronizar dados');
     } finally {
       setIsSyncing(false);
     }

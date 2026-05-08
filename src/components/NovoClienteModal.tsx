@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cliente, Categoria, Nicho } from '../types';
-import { idbService } from '../services/indexedDB';
+import { supabase } from '../services/supabase';
 
 interface NovoClienteModalProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
   const [novoNicho, setNovoNicho] = useState('');
   const [showNovaCategoria, setShowNovaCategoria] = useState(false);
   const [showNovoNicho, setShowNovoNicho] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,19 +39,24 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
   }, [isOpen, clienteEditando]);
 
   const carregarCategorias = async () => {
-    const cats = await idbService.getCategorias();
-    setCategorias(cats);
+    const { data } = await supabase.from('categorias').select('*');
+    if (data) setCategorias(data);
   };
 
   const carregarNichos = async () => {
-    const nic = await idbService.getNichos();
-    setNichos(nic);
+    const { data } = await supabase.from('nichos').select('*');
+    if (data) setNichos(data);
   };
 
   const adicionarCategoria = async () => {
-    if (novaCategoria.trim()) {
-      const id = await idbService.addCategoria({ nome: novaCategoria });
-      setCategorias([...categorias, { id, nome: novaCategoria }]);
+    if (!novaCategoria.trim()) return;
+    const { data, error } = await supabase
+      .from('categorias')
+      .insert([{ nome: novaCategoria }])
+      .select();
+
+    if (!error && data) {
+      setCategorias([...categorias, data[0]]);
       setFormData({ ...formData, categoria: novaCategoria });
       setNovaCategoria('');
       setShowNovaCategoria(false);
@@ -58,9 +64,14 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
   };
 
   const adicionarNicho = async () => {
-    if (novoNicho.trim()) {
-      const id = await idbService.addNicho({ nome: novoNicho });
-      setNichos([...nichos, { id, nome: novoNicho }]);
+    if (!novoNicho.trim()) return;
+    const { data, error } = await supabase
+      .from('nichos')
+      .insert([{ nome: novoNicho }])
+      .select();
+
+    if (!error && data) {
+      setNichos([...nichos, data[0]]);
       setFormData({ ...formData, nicho: novoNicho });
       setNovoNicho('');
       setShowNovoNicho(false);
@@ -68,7 +79,28 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
   };
 
   const handleSave = async () => {
-    if (formData.nome_empresa && formData.nome_responsavel && formData.categoria && formData.nicho) {
+    if (!formData.nome_empresa || !formData.nome_responsavel || !formData.categoria || !formData.nicho) {
+      alert('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (clienteEditando?.id) {
+        const { error } = await supabase
+          .from('clientes')
+          .update(formData)
+          .eq('id', clienteEditando.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('clientes')
+          .insert([formData]);
+
+        if (error) throw error;
+      }
+
       onSave(formData);
       setFormData({
         nome_empresa: '',
@@ -80,62 +112,67 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
         observacoes: ''
       });
       onClose();
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar cliente');
+    } finally {
+      setLoading(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1a2e1a] rounded-3xl p-8 max-w-md w-full border border-green-500/20">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-3 md:p-4">
+      <div className="bg-[#1a2e1a] rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-8 w-[95vw] sm:w-full max-w-md border border-green-500/20 max-h-[92vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex-1">
             {clienteEditando ? 'Editar Cliente' : 'Novo Cliente'}
           </h2>
-          <button onClick={onClose} className="text-white/50 hover:text-white text-2xl">✕</button>
+          <button onClick={onClose} className="text-white/50 hover:text-white text-2xl flex-shrink-0 ml-2">✕</button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <label className="text-white/70 text-sm">Nome da Empresa *</label>
+            <label className="text-white/70 text-xs sm:text-sm">Nome da Empresa *</label>
             <input
               type="text"
               placeholder="Ex: Mercado do João"
               value={formData.nome_empresa}
               onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-3 sm:px-4 py-2 text-white text-sm focus:outline-none focus:border-green-500"
             />
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Nome do Responsável *</label>
+            <label className="text-white/70 text-xs sm:text-sm">Nome do Responsável *</label>
             <input
               type="text"
               placeholder="Ex: João da Silva"
               value={formData.nome_responsavel}
               onChange={(e) => setFormData({ ...formData, nome_responsavel: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-3 sm:px-4 py-2 text-white text-sm focus:outline-none focus:border-green-500"
             />
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Telefone</label>
+            <label className="text-white/70 text-xs sm:text-sm">Telefone</label>
             <input
               type="tel"
               placeholder="(67) 99999-9999"
               value={formData.telefone}
               onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-3 sm:px-4 py-2 text-white text-sm focus:outline-none focus:border-green-500"
             />
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Categoria *</label>
+            <label className="text-white/70 text-xs sm:text-sm">Categoria *</label>
             <div className="flex gap-2">
               <select
                 value={formData.categoria}
                 onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-3 sm:px-4 py-2 text-white text-sm focus:outline-none focus:border-green-500"
               >
                 <option value="">Selecione...</option>
                 {categorias.map(cat => (
@@ -144,7 +181,7 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
               </select>
               <button
                 onClick={() => setShowNovaCategoria(!showNovaCategoria)}
-                className="bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded-lg px-3 py-2 text-green-400"
+                className="bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded-lg px-2 sm:px-3 py-2 text-green-400 text-sm flex-shrink-0"
               >
                 +
               </button>
@@ -156,11 +193,11 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
                   placeholder="Nova categoria"
                   value={novaCategoria}
                   onChange={(e) => setNovaCategoria(e.target.value)}
-                  className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                  className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"
                 />
                 <button
                   onClick={adicionarCategoria}
-                  className="bg-green-500/40 hover:bg-green-500/60 rounded-lg px-4 py-2 text-white"
+                  className="bg-green-500/40 hover:bg-green-500/60 rounded-lg px-3 py-2 text-white text-sm flex-shrink-0"
                 >
                   OK
                 </button>
@@ -169,12 +206,12 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Nicho de Empresa *</label>
+            <label className="text-white/70 text-xs sm:text-sm">Nicho de Empresa *</label>
             <div className="flex gap-2">
               <select
                 value={formData.nicho}
                 onChange={(e) => setFormData({ ...formData, nicho: e.target.value })}
-                className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-3 sm:px-4 py-2 text-white text-sm focus:outline-none focus:border-green-500"
               >
                 <option value="">Selecione...</option>
                 {nichos.map(nicho => (
@@ -183,7 +220,7 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
               </select>
               <button
                 onClick={() => setShowNovoNicho(!showNovoNicho)}
-                className="bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded-lg px-3 py-2 text-green-400"
+                className="bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded-lg px-2 sm:px-3 py-2 text-green-400 text-sm flex-shrink-0"
               >
                 +
               </button>
@@ -195,11 +232,11 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
                   placeholder="Novo nicho"
                   value={novoNicho}
                   onChange={(e) => setNovoNicho(e.target.value)}
-                  className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                  className="flex-1 bg-black/20 border border-green-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"
                 />
                 <button
                   onClick={adicionarNicho}
-                  className="bg-green-500/40 hover:bg-green-500/60 rounded-lg px-4 py-2 text-white"
+                  className="bg-green-500/40 hover:bg-green-500/60 rounded-lg px-3 py-2 text-white text-sm flex-shrink-0"
                 >
                   OK
                 </button>
@@ -208,11 +245,11 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Status</label>
-            <div className="flex gap-3">
+            <label className="text-white/70 text-xs sm:text-sm">Status</label>
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => setFormData({ ...formData, status: 'Prospecto' })}
-                className={`flex-1 py-2 rounded-lg transition-colors ${
+                className={`flex-1 py-2 rounded-lg transition-colors text-sm ${
                   formData.status === 'Prospecto'
                     ? 'bg-sky-500 text-white'
                     : 'bg-black/20 text-white/50 border border-white/10'
@@ -222,7 +259,7 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
               </button>
               <button
                 onClick={() => setFormData({ ...formData, status: 'Fechado' })}
-                className={`flex-1 py-2 rounded-lg transition-colors ${
+                className={`flex-1 py-2 rounded-lg transition-colors text-sm ${
                   formData.status === 'Fechado'
                     ? 'bg-green-500 text-white'
                     : 'bg-black/20 text-white/50 border border-white/10'
@@ -234,27 +271,28 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
           </div>
 
           <div>
-            <label className="text-white/70 text-sm">Observações</label>
+            <label className="text-white/70 text-xs sm:text-sm">Observações</label>
             <textarea
               placeholder="Adicione observações..."
               value={formData.observacoes}
               onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500 resize-none h-24"
+              className="w-full bg-black/20 border border-green-500/30 rounded-lg px-3 sm:px-4 py-2 text-white text-sm focus:outline-none focus:border-green-500 resize-none h-20"
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-2 sm:gap-3 pt-4">
             <button
               onClick={onClose}
-              className="flex-1 py-2 bg-black/20 border border-white/10 rounded-lg text-white hover:bg-black/30"
+              className="flex-1 py-2 bg-black/20 border border-white/10 rounded-lg text-white text-sm hover:bg-black/30"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 py-2 bg-green-500/40 hover:bg-green-500/60 rounded-lg text-white font-semibold"
+              disabled={loading}
+              className="flex-1 py-2 bg-green-500/40 hover:bg-green-500/60 disabled:opacity-50 rounded-lg text-white text-sm font-semibold"
             >
-              {clienteEditando ? 'Atualizar' : 'Salvar'}
+              {loading ? 'Salvando...' : clienteEditando ? 'Atualizar' : 'Salvar'}
             </button>
           </div>
         </div>

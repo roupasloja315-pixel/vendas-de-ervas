@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Cliente, Venda } from '../types';
 import { idbService } from '../services/indexedDB';
+import { supabase } from '../services/supabase';
 import { NovoClienteModal } from './NovoClienteModal';
 import { VendaModal } from './VendaModal';
 import { ClientesList } from './ClientesList';
@@ -28,21 +29,35 @@ export function App() {
   const inicializar = async () => {
     try {
       await idbService.init();
-      carregarClientes();
-      carregarVendas();
+      await carregarClientes();
+      await carregarVendas();
     } catch (error) {
       console.error('Erro ao inicializar:', error);
     }
   };
 
   const carregarClientes = async () => {
-    const clientesIDB = await idbService.getClientes();
-    setClientes(clientesIDB);
+    try {
+      const { data, error } = await supabase.from('clientes').select('*');
+      if (error) throw error;
+      if (data) setClientes(data as Cliente[]);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+      const clientesIDB = await idbService.getClientes();
+      setClientes(clientesIDB);
+    }
   };
 
   const carregarVendas = async () => {
-    const vendasIDB = await idbService.getVendas();
-    setVendas(vendasIDB);
+    try {
+      const { data, error } = await supabase.from('vendas').select('*');
+      if (error) throw error;
+      if (data) setVendas(data as Venda[]);
+    } catch (error) {
+      console.error('Erro ao carregar vendas:', error);
+      const vendasIDB = await idbService.getVendas();
+      setVendas(vendasIDB);
+    }
   };
 
   const handleNovoCliente = async (cliente: Cliente) => {
@@ -62,8 +77,13 @@ export function App() {
 
   const handleDeletarCliente = async (id: string) => {
     if (confirm('Tem certeza que deseja deletar este cliente?')) {
-      await idbService.deleteCliente(id);
-      carregarClientes();
+      try {
+        await supabase.from('clientes').delete().eq('id', id);
+        carregarClientes();
+      } catch (error) {
+        console.error('Erro ao deletar:', error);
+        alert('Erro ao deletar cliente');
+      }
     }
   };
 
@@ -84,8 +104,13 @@ export function App() {
 
   const handleDeletarVenda = async (id: string) => {
     if (confirm('Tem certeza que deseja deletar esta venda?')) {
-      await idbService.deleteVenda(id);
-      carregarVendas();
+      try {
+        await supabase.from('vendas').delete().eq('id', id);
+        carregarVendas();
+      } catch (error) {
+        console.error('Erro ao deletar:', error);
+        alert('Erro ao deletar venda');
+      }
     }
   };
 
