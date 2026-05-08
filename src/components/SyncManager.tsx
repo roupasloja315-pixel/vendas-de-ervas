@@ -36,10 +36,10 @@ export function SyncManager({ isOnline, onSync }: SyncManagerProps) {
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2 md:gap-4 flex-wrap md:flex-nowrap">
       <div className="flex items-center gap-2">
-        <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
-        <span className="text-sm text-white/70">
+        <div className={`w-2 md:w-3 h-2 md:h-3 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
+        <span className="text-xs md:text-sm text-white/70">
           {isOnline ? 'Online' : 'Offline'}
         </span>
       </div>
@@ -47,13 +47,13 @@ export function SyncManager({ isOnline, onSync }: SyncManagerProps) {
         <button
           onClick={handleSync}
           disabled={isSyncing}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap ${
             isSyncing
               ? 'bg-yellow-500/40 text-yellow-300 cursor-not-allowed'
               : 'bg-green-500/40 hover:bg-green-500/60 text-green-300'
           }`}
         >
-          {isSyncing ? '⏳ Sincronizando...' : 'Sincronizar'}
+          {isSyncing ? '⏳ Sync...' : 'Sincronizar'}
         </button>
       )}
     </div>
