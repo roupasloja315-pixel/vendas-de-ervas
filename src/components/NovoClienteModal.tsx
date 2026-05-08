@@ -80,7 +80,7 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
 
   const handleSave = async () => {
     if (!formData.nome_empresa || !formData.nome_responsavel || !formData.categoria || !formData.nicho) {
-      alert('Preencha todos os campos obrigatórios');
+      alert('Preencha campos obrigatórios');
       return;
     }
 
@@ -91,13 +91,11 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
           .from('clientes')
           .update(formData)
           .eq('id', clienteEditando.id);
-
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('clientes')
           .insert([formData]);
-
         if (error) throw error;
       }
 
@@ -113,8 +111,8 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
       });
       onClose();
     } catch (error) {
-      console.error('Erro ao salvar:', error);
-      alert('Erro ao salvar cliente');
+      console.error('Erro:', error);
+      alert('Erro ao salvar');
     } finally {
       setLoading(false);
     }
@@ -123,84 +121,42 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2">
-      <div className="bg-[#1a2e1a] rounded-xl p-3 w-[90vw] max-w-sm border border-green-500/20 max-h-[88vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-base font-bold text-white">
-            {clienteEditando ? 'Editar' : 'Novo Cliente'}
-          </h2>
-          <button onClick={onClose} className="text-white/50 hover:text-white text-xl leading-none w-6 h-6 flex items-center justify-center">✕</button>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-1">
+      <div className="bg-[#1a2e1a] rounded-lg p-2 w-[92vw] max-w-xs border border-green-500/20 max-h-[85vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-sm font-bold text-white">{clienteEditando ? 'Editar' : 'Novo Cliente'}</h2>
+          <button onClick={onClose} className="text-white text-lg w-5 h-5 flex items-center justify-center">✕</button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div>
             <label className="text-white/70 text-xs">Empresa *</label>
-            <input
-              type="text"
-              placeholder="Ex: Mercado"
-              value={formData.nome_empresa}
-              onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-            />
+            <input type="text" placeholder="Mercado" value={formData.nome_empresa} onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })} className="w-full bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none focus:border-green-500" />
           </div>
 
           <div>
             <label className="text-white/70 text-xs">Responsável *</label>
-            <input
-              type="text"
-              placeholder="Ex: João"
-              value={formData.nome_responsavel}
-              onChange={(e) => setFormData({ ...formData, nome_responsavel: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-            />
+            <input type="text" placeholder="João" value={formData.nome_responsavel} onChange={(e) => setFormData({ ...formData, nome_responsavel: e.target.value })} className="w-full bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none focus:border-green-500" />
           </div>
 
           <div>
-            <label className="text-white/70 text-xs">Telefone</label>
-            <input
-              type="tel"
-              placeholder="(67) 99999-9999"
-              value={formData.telefone}
-              onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-            />
+            <label className="text-white/70 text-xs">Tel</label>
+            <input type="tel" placeholder="(67) 9999-9999" value={formData.telefone} onChange={(e) => setFormData({ ...formData, telefone: e.target.value })} className="w-full bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none focus:border-green-500" />
           </div>
 
           <div>
             <label className="text-white/70 text-xs">Categoria *</label>
             <div className="flex gap-1">
-              <select
-                value={formData.categoria}
-                onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                className="flex-1 bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-              >
-                <option value="">Selecione...</option>
-                {categorias.map(cat => (
-                  <option key={cat.id} value={cat.nome}>{cat.nome}</option>
-                ))}
+              <select value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} className="flex-1 bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none focus:border-green-500">
+                <option value="">-</option>
+                {categorias.map(cat => (<option key={cat.id} value={cat.nome}>{cat.nome}</option>))}
               </select>
-              <button
-                onClick={() => setShowNovaCategoria(!showNovaCategoria)}
-                className="bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded px-1.5 py-1 text-green-400 text-xs flex-shrink-0"
-              >
-                +
-              </button>
+              <button onClick={() => setShowNovaCategoria(!showNovaCategoria)} className="bg-green-500/20 border border-green-500/30 rounded px-1 py-0.5 text-green-400 text-xs">+</button>
             </div>
             {showNovaCategoria && (
               <div className="flex gap-1 mt-1">
-                <input
-                  type="text"
-                  placeholder="Nova"
-                  value={novaCategoria}
-                  onChange={(e) => setNovaCategoria(e.target.value)}
-                  className="flex-1 bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-                />
-                <button
-                  onClick={adicionarCategoria}
-                  className="bg-green-500/40 hover:bg-green-500/60 rounded px-2 py-1 text-white text-xs flex-shrink-0"
-                >
-                  OK
-                </button>
+                <input type="text" placeholder="Nova" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)} className="flex-1 bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none" />
+                <button onClick={adicionarCategoria} className="bg-green-500/40 rounded px-1.5 py-0.5 text-white text-xs">OK</button>
               </div>
             )}
           </div>
@@ -208,38 +164,16 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
           <div>
             <label className="text-white/70 text-xs">Nicho *</label>
             <div className="flex gap-1">
-              <select
-                value={formData.nicho}
-                onChange={(e) => setFormData({ ...formData, nicho: e.target.value })}
-                className="flex-1 bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-              >
-                <option value="">Selecione...</option>
-                {nichos.map(nicho => (
-                  <option key={nicho.id} value={nicho.nome}>{nicho.nome}</option>
-                ))}
+              <select value={formData.nicho} onChange={(e) => setFormData({ ...formData, nicho: e.target.value })} className="flex-1 bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none focus:border-green-500">
+                <option value="">-</option>
+                {nichos.map(nicho => (<option key={nicho.id} value={nicho.nome}>{nicho.nome}</option>))}
               </select>
-              <button
-                onClick={() => setShowNovoNicho(!showNovoNicho)}
-                className="bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded px-1.5 py-1 text-green-400 text-xs flex-shrink-0"
-              >
-                +
-              </button>
+              <button onClick={() => setShowNovoNicho(!showNovoNicho)} className="bg-green-500/20 border border-green-500/30 rounded px-1 py-0.5 text-green-400 text-xs">+</button>
             </div>
             {showNovoNicho && (
               <div className="flex gap-1 mt-1">
-                <input
-                  type="text"
-                  placeholder="Novo"
-                  value={novoNicho}
-                  onChange={(e) => setNovoNicho(e.target.value)}
-                  className="flex-1 bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
-                />
-                <button
-                  onClick={adicionarNicho}
-                  className="bg-green-500/40 hover:bg-green-500/60 rounded px-2 py-1 text-white text-xs flex-shrink-0"
-                >
-                  OK
-                </button>
+                <input type="text" placeholder="Novo" value={novoNicho} onChange={(e) => setNovoNicho(e.target.value)} className="flex-1 bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs focus:outline-none" />
+                <button onClick={adicionarNicho} className="bg-green-500/40 rounded px-1.5 py-0.5 text-white text-xs">OK</button>
               </div>
             )}
           </div>
@@ -247,53 +181,19 @@ export function NovoClienteModal({ isOpen, onClose, onSave, clienteEditando }: N
           <div>
             <label className="text-white/70 text-xs">Status</label>
             <div className="flex gap-1">
-              <button
-                onClick={() => setFormData({ ...formData, status: 'Prospecto' })}
-                className={`flex-1 py-1 rounded text-xs font-medium ${
-                  formData.status === 'Prospecto'
-                    ? 'bg-sky-500 text-white'
-                    : 'bg-black/20 text-white/50 border border-white/10'
-                }`}
-              >
-                Prospecto
-              </button>
-              <button
-                onClick={() => setFormData({ ...formData, status: 'Fechado' })}
-                className={`flex-1 py-1 rounded text-xs font-medium ${
-                  formData.status === 'Fechado'
-                    ? 'bg-green-500 text-white'
-                    : 'bg-black/20 text-white/50 border border-white/10'
-                }`}
-              >
-                Fechado
-              </button>
+              <button onClick={() => setFormData({ ...formData, status: 'Prospecto' })} className={`flex-1 py-0.5 rounded text-xs ${formData.status === 'Prospecto' ? 'bg-sky-500 text-white' : 'bg-black/20 text-white/50'}`}>Prospecto</button>
+              <button onClick={() => setFormData({ ...formData, status: 'Fechado' })} className={`flex-1 py-0.5 rounded text-xs ${formData.status === 'Fechado' ? 'bg-green-500 text-white' : 'bg-black/20 text-white/50'}`}>Fechado</button>
             </div>
           </div>
 
           <div>
-            <label className="text-white/70 text-xs">Observações</label>
-            <textarea
-              placeholder="Observações..."
-              value={formData.observacoes}
-              onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-              className="w-full bg-black/20 border border-green-500/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500 resize-none h-12"
-            />
+            <label className="text-white/70 text-xs">Obs</label>
+            <textarea placeholder="..." value={formData.observacoes} onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })} className="w-full bg-black/20 border border-green-500/30 rounded px-1.5 py-0.5 text-white text-xs resize-none h-8 focus:outline-none" />
           </div>
 
-          <div className="flex gap-1 pt-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-1 bg-black/20 border border-white/10 rounded text-white text-xs hover:bg-black/30"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 py-1 bg-green-500/40 hover:bg-green-500/60 disabled:opacity-50 rounded text-white text-xs font-semibold"
-            >
-              {loading ? 'Salvando...' : 'Salvar'}
-            </button>
+          <div className="flex gap-1 pt-1">
+            <button onClick={onClose} className="flex-1 py-1 bg-black/20 border border-white/10 rounded text-white text-xs">Cancelar</button>
+            <button onClick={handleSave} disabled={loading} className="flex-1 py-1 bg-green-500/40 rounded text-white text-xs font-semibold disabled:opacity-50">{loading ? '...' : 'Salvar'}</button>
           </div>
         </div>
       </div>
